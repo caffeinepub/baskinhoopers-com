@@ -15,9 +15,9 @@ import AccessControl "authorization/access-control";
 import Stripe "stripe/stripe";
 import Storage "blob-storage/Storage";
 import OutCall "http-outcalls/outcall";
-import Migration "migration";
 
-(with migration = Migration.run)
+
+
 
 actor {
   module Card {

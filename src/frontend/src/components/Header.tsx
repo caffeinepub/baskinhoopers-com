@@ -29,36 +29,36 @@ export default function Header() {
           className="flex items-center gap-2 no-underline"
           data-ocid="nav.link"
         >
-          <span className="font-display text-xl font-black tracking-tight text-emerald-400">
-            🐍 SNAKEYMON
+          <span className="font-display text-xl font-black tracking-tight text-orange-400">
+            🏀 BASKIN HOOPERS
           </span>
         </Link>
 
         <nav className="hidden items-center gap-6 md:flex">
           <Link
             to="/"
-            className="font-display text-sm font-bold uppercase tracking-widest text-foreground/80 transition-colors hover:text-emerald-400"
+            className="font-display text-sm font-bold uppercase tracking-widest text-foreground/80 transition-colors hover:text-orange-400"
             data-ocid="nav.link"
           >
             Shop Cards
           </Link>
           <a
             href="/#trending"
-            className="font-display text-sm font-bold uppercase tracking-widest text-foreground/80 transition-colors hover:text-emerald-400"
+            className="font-display text-sm font-bold uppercase tracking-widest text-foreground/80 transition-colors hover:text-orange-400"
             data-ocid="nav.link"
           >
             Featured
           </a>
           <a
             href="/#boosters"
-            className="font-display text-sm font-bold uppercase tracking-widest text-foreground/80 transition-colors hover:text-emerald-400"
+            className="font-display text-sm font-bold uppercase tracking-widest text-foreground/80 transition-colors hover:text-orange-400"
             data-ocid="nav.link"
           >
-            Boosters
+            Card Packs
           </a>
           <a
-            href="mailto:info@snakeymon.io"
-            className="font-display text-sm font-bold uppercase tracking-widest text-foreground/80 transition-colors hover:text-emerald-400"
+            href="mailto:info@baskinhoopers.com"
+            className="font-display text-sm font-bold uppercase tracking-widest text-foreground/80 transition-colors hover:text-orange-400"
             data-ocid="nav.link"
           >
             Contact
@@ -66,7 +66,7 @@ export default function Header() {
           {identity && (
             <Link
               to="/admin"
-              className="font-display text-sm font-bold uppercase tracking-widest text-foreground/80 transition-colors hover:text-emerald-400"
+              className="font-display text-sm font-bold uppercase tracking-widest text-foreground/80 transition-colors hover:text-orange-400"
               data-ocid="nav.link"
             >
               <Shield className="mr-1 inline h-4 w-4" />
@@ -79,12 +79,12 @@ export default function Header() {
           <button
             type="button"
             onClick={() => setIsCartOpen(true)}
-            className="relative p-2 text-foreground/80 transition-colors hover:text-emerald-400"
+            className="relative p-2 text-foreground/80 transition-colors hover:text-orange-400"
             data-ocid="cart.open_modal_button"
           >
             <ShoppingCart className="h-5 w-5" />
             {cartCount > 0 && (
-              <Badge className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-emerald-500 p-0 text-[10px] font-black text-white">
+              <Badge className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-orange-500 p-0 text-[10px] font-black text-white">
                 {cartCount}
               </Badge>
             )}
@@ -95,7 +95,7 @@ export default function Header() {
               variant="outline"
               size="sm"
               onClick={clear}
-              className="hidden border-border font-display text-xs font-bold uppercase tracking-wider text-foreground/80 hover:border-emerald-400 hover:text-emerald-400 md:flex"
+              className="hidden border-border font-display text-xs font-bold uppercase tracking-wider text-foreground/80 hover:border-orange-400 hover:text-orange-400 md:flex"
               data-ocid="auth.button"
             >
               <LogOut className="mr-1 h-3 w-3" />
@@ -106,7 +106,7 @@ export default function Header() {
               size="sm"
               onClick={login}
               disabled={isLoggingIn}
-              className="bg-emerald-500 font-display text-xs font-black uppercase tracking-wider text-white hover:bg-emerald-400"
+              className="bg-orange-500 font-display text-xs font-black uppercase tracking-wider text-white hover:bg-orange-400"
               data-ocid="auth.button"
             >
               <User className="mr-1 h-3 w-3" />

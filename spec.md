@@ -1,42 +1,31 @@
-# snakeymon-io
+# Baskin Hoopers
 
 ## Current State
-- E-commerce app with card shop, cart, Stripe checkout, and admin panel
-- OrderHistory type has: id, buyer, cardIds, totalPrice, createdAt
-- No shipping address, no order status, no admin order management
-- Admin panel has card inventory management only
-- Success page shows generic confirmation
+The project is branded as Snakeymon (snake TCG). All components reference snakes, Snakeymon, emerald colors, and snake card mechanics.
 
 ## Requested Changes (Diff)
 
 ### Add
-- `ShippingAddress` type: name, email, street, city, state, zip, country
-- `status` field on OrderHistory: `#pending | #printing | #shipped | #delivered`
-- `shippingAddress` field on OrderHistory
-- `trackingNumber` optional field on OrderHistory
-- Backend: `placeOrderWithShipping(shippingAddress)` replacing or extending placeOrder
-- Backend: `getAllOrders()` admin-only, returns all orders sorted by createdAt desc
-- Backend: `updateOrderStatus(orderId, status, ?trackingNumber)` admin-only
-- Frontend: Shipping address form shown at checkout (before payment or on success page)
-- Frontend: `/orders` route - user's order history with status badges and tracking numbers
-- Frontend: Admin panel "Orders" tab - list all orders, update status, mark as shipped with tracking number, print view button
-- Frontend: Order tracking page at `/track/:orderId` - public lookup by order ID
+- Basketball card branding throughout (Baskin Hoopers)
 
 ### Modify
-- AdminPanel: add "Orders" tab alongside inventory
-- SuccessPage: show order ID and link to track order
-- CartDrawer/checkout flow: collect shipping address before/during checkout
+- Header: Replace 🐍 SNAKEYMON with 🏀 BASKIN HOOPERS branding, orange/amber color scheme, nav links for basketball card shop
+- Hero: Basketball card themed hero, orange/gold colors
+- Footer: Baskin Hoopers branding, contact info
+- PromoBand: Basketball themed promo
+- HomePage: Basketball card data (NBA-style custom cards)
+- BoosterShop: Rebrand to "Card Packs" or keep as packs but basketball themed
+- CardGrid: Keep functional, update empty states if any
 
 ### Remove
-- Nothing removed
+- All snake/Snakeymon references
+- Emerald green color scheme (replace with orange/amber basketball theme)
 
 ## Implementation Plan
-1. Update `OrderHistory` type in Motoko to include shippingAddress, status, trackingNumber
-2. Add `ShippingAddress` type
-3. Add `getAllOrders` (admin), `updateOrderStatus` (admin) functions
-4. Update `placeOrder` to accept shipping address
-5. Frontend: Add shipping address form in cart/checkout flow
-6. Frontend: `/orders` page showing user's order history
-7. Frontend: Admin Orders tab with full order list, status controls, print button
-8. Frontend: Update SuccessPage with order ID and tracking link
-9. Add routes for /orders
+1. Update Header with Baskin Hoopers branding and orange color scheme
+2. Update Hero section with basketball card theme
+3. Update Footer with Baskin Hoopers info
+4. Update PromoBand with basketball theme
+5. Update HomePage card generation to use basketball player cards
+6. Update BoosterShop to basketball card packs
+7. Validate and build

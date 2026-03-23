@@ -8,7 +8,7 @@ export default function PromoBand() {
       className="relative overflow-hidden py-24"
       style={{
         background:
-          "linear-gradient(135deg, oklch(0.09 0.005 265) 0%, oklch(0.12 0.04 150) 50%, oklch(0.09 0.005 265) 100%)",
+          "linear-gradient(135deg, oklch(0.09 0.005 265) 0%, oklch(0.12 0.04 45) 50%, oklch(0.09 0.005 265) 100%)",
       }}
     >
       {/* Glow */}
@@ -16,7 +16,7 @@ export default function PromoBand() {
         className="pointer-events-none absolute inset-0"
         style={{
           background:
-            "radial-gradient(ellipse at center, oklch(0.65 0.22 150 / 0.1) 0%, transparent 70%)",
+            "radial-gradient(ellipse at center, oklch(0.70 0.20 50 / 0.1) 0%, transparent 70%)",
         }}
       />
 
@@ -28,27 +28,28 @@ export default function PromoBand() {
           transition={{ duration: 0.6 }}
         >
           <div className="mb-4 flex items-center justify-center gap-2">
-            <Sparkles className="h-5 w-5 text-emerald-400" />
-            <span className="font-display text-xs font-bold uppercase tracking-[0.3em] text-emerald-400">
-              Booster Packs Available
+            <Sparkles className="h-5 w-5 text-orange-400" />
+            <span className="font-display text-xs font-bold uppercase tracking-[0.3em] text-orange-400">
+              Card Packs Available
             </span>
-            <Sparkles className="h-5 w-5 text-emerald-400" />
+            <Sparkles className="h-5 w-5 text-orange-400" />
           </div>
 
           <h2 className="font-display mx-auto max-w-3xl text-5xl font-black uppercase leading-none tracking-tight text-foreground md:text-7xl">
-            UNLEASH YOUR <span className="text-emerald-400">SERPENT</span>
+            LEGENDARY PLAYERS ·{" "}
+            <span className="text-orange-400">CUSTOM ARTWORK</span>
           </h2>
 
           <p className="mx-auto mt-6 max-w-lg text-base text-muted-foreground md:text-lg">
-            Crack open a booster pack and discover rare serpents you never knew
-            existed. Every pack holds 5 random cards — anything from Common to
-            the legendary Mewsnark.
+            Crack open a card pack and discover rare hoopers you never knew
+            existed. Every pack holds 5 random cards — anything from Common
+            rookies to Legendary all-stars.
           </p>
 
           <div className="mt-10 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
             <Button
               size="lg"
-              className="bg-emerald-500 font-display text-base font-black uppercase tracking-widest text-white shadow-lg hover:bg-emerald-400"
+              className="bg-orange-500 font-display text-base font-black uppercase tracking-widest text-white shadow-lg hover:bg-orange-400"
               data-ocid="promo.primary_button"
               onClick={() =>
                 document
@@ -67,18 +68,18 @@ export default function PromoBand() {
           <div className="mx-auto mt-16 grid max-w-2xl grid-cols-1 gap-6 sm:grid-cols-3">
             {[
               {
-                icon: "🐍",
+                icon: "🏀",
                 title: "500 Unique Cards",
-                desc: "All snake types and rarities",
+                desc: "All positions and rarities",
               },
               {
                 icon: "✨",
-                title: "5 Rarity Tiers",
+                title: "4 Rarity Tiers",
                 desc: "Common to Legendary",
               },
               {
                 icon: "📦",
-                title: "Booster Boxes",
+                title: "Card Boxes",
                 desc: "36 packs per box",
               },
             ].map((f) => (

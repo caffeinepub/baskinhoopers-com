@@ -8,16 +8,16 @@ export default function Hero() {
       className="relative overflow-hidden"
       style={{
         background:
-          "linear-gradient(135deg, oklch(0.09 0.005 265) 0%, oklch(0.11 0.02 160) 50%, oklch(0.09 0.005 265) 100%)",
+          "linear-gradient(135deg, oklch(0.09 0.005 265) 0%, oklch(0.12 0.04 45) 50%, oklch(0.09 0.005 265) 100%)",
         minHeight: "92vh",
       }}
     >
-      {/* Green glow accent */}
+      {/* Orange glow accent */}
       <div
         className="pointer-events-none absolute right-0 top-0 h-[600px] w-[600px] rounded-full opacity-20"
         style={{
           background:
-            "radial-gradient(circle, oklch(0.65 0.22 150) 0%, transparent 70%)",
+            "radial-gradient(circle, oklch(0.70 0.20 50) 0%, transparent 70%)",
           transform: "translate(30%, -30%)",
         }}
       />
@@ -36,29 +36,30 @@ export default function Hero() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, ease: "easeOut" }}
         >
-          <div className="mb-4 inline-block rounded-full border border-emerald-500/30 bg-emerald-500/10 px-4 py-1.5">
-            <span className="font-display text-xs font-bold uppercase tracking-[0.2em] text-emerald-400">
-              Serpent Trading Cards · Collect Them All
+          <div className="mb-4 inline-block rounded-full border border-orange-500/30 bg-orange-500/10 px-4 py-1.5">
+            <span className="font-display text-xs font-bold uppercase tracking-[0.2em] text-orange-400">
+              Custom Basketball Cards · Collect Them All
             </span>
           </div>
 
           <h1 className="font-display mx-auto max-w-4xl text-5xl font-black uppercase leading-none tracking-tight text-foreground md:text-7xl lg:text-8xl">
-            THE WORLD OF <span className="text-emerald-400">SNAKEYMON</span>
+            COLLECT THE GREATEST{" "}
+            <span className="text-orange-400">BASKETBALL CARDS</span>
             <br />
-            <span className="text-gold">AWAITS</span>{" "}
-            <span className="text-foreground/60">YOU</span>
+            <span className="text-gold">BASKIN</span>{" "}
+            <span className="text-foreground/60">HOOPERS</span>
           </h1>
 
           <p className="mx-auto mt-6 max-w-xl text-base text-muted-foreground md:text-lg">
-            Collect, trade, and battle with the rarest serpent cards in
-            existence. From humble Common Snakeyns to the mythical Mewsnark —
-            your collection starts here.
+            Custom-made basketball cards featuring the greatest players,
+            moments, and styles. Collect your favorites and build the ultimate
+            deck.
           </p>
 
           <div className="mt-10 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
             <Button
               size="lg"
-              className="bg-emerald-500 font-display text-base font-black uppercase tracking-widest text-white shadow-lg hover:bg-emerald-400"
+              className="bg-orange-500 font-display text-base font-black uppercase tracking-widest text-white shadow-lg hover:bg-orange-400"
               onClick={() =>
                 document
                   .getElementById("trending")
@@ -66,26 +67,26 @@ export default function Hero() {
               }
               data-ocid="hero.primary_button"
             >
-              COLLECT NOW
+              SHOP NOW
             </Button>
             <Button
               variant="outline"
               size="lg"
-              className="border-foreground/30 font-display text-base font-bold uppercase tracking-wider text-foreground/80 hover:border-emerald-500 hover:text-emerald-400"
+              className="border-foreground/30 font-display text-base font-bold uppercase tracking-wider text-foreground/80 hover:border-orange-500 hover:text-orange-400"
               data-ocid="hero.secondary_button"
             >
-              VIEW SERPENT DEX
+              VIEW ALL CARDS
             </Button>
           </div>
 
           <div className="mt-16 grid grid-cols-3 gap-8">
             {[
-              { label: "Snakeymon Cards", value: "120+" },
-              { label: "Serpent Collectors", value: "3,000+" },
+              { label: "Basketball Cards", value: "500+" },
+              { label: "Collectors", value: "10,000+" },
               { label: "Rarity Tiers", value: "4" },
             ].map((stat) => (
               <div key={stat.label} className="text-center">
-                <div className="font-display text-3xl font-black text-emerald-400 md:text-4xl">
+                <div className="font-display text-3xl font-black text-orange-400 md:text-4xl">
                   {stat.value}
                 </div>
                 <div className="mt-1 font-display text-xs font-bold uppercase tracking-widest text-foreground/50">

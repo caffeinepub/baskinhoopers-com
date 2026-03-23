@@ -1,4 +1,3 @@
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Package, PackageOpen } from "lucide-react";
 import { motion } from "motion/react";
@@ -6,31 +5,31 @@ import { toast } from "sonner";
 
 const BOOSTER_PACKS = [
   {
-    id: "standard-pack",
-    name: "Standard Pack",
+    id: "rookie-pack",
+    name: "Rookie Pack",
     contents: "5 random cards, at least 1 Rare",
     price: "$4.99",
     tag: "STARTER",
-    tagColor: "bg-emerald-500/20 text-emerald-300 border-emerald-500/30",
-    image: "/assets/generated/snakeymon-booster-pack.dim_300x420.jpg",
+    tagColor: "bg-orange-500/20 text-orange-300 border-orange-500/30",
+    image: "/assets/generated/basketball-card-placeholder.dim_400x560.jpg",
   },
   {
-    id: "rare-surge-pack",
-    name: "Rare Surge Pack",
+    id: "all-star-pack",
+    name: "All-Star Pack",
     contents: "5 cards, 2 guaranteed Rare",
     price: "$9.99",
     tag: "POPULAR",
     tagColor: "bg-blue-500/20 text-blue-300 border-blue-500/30",
-    image: "/assets/generated/snakeymon-booster-pack.dim_300x420.jpg",
+    image: "/assets/generated/basketball-card-placeholder.dim_400x560.jpg",
   },
   {
-    id: "legendary-haul-pack",
-    name: "Legendary Haul Pack",
+    id: "championship-pack",
+    name: "Championship Pack",
     contents: "5 cards, 1 guaranteed Legendary",
     price: "$19.99",
     tag: "BEST VALUE",
     tagColor: "bg-amber-500/20 text-amber-300 border-amber-500/30",
-    image: "/assets/generated/snakeymon-booster-pack.dim_300x420.jpg",
+    image: "/assets/generated/basketball-card-placeholder.dim_400x560.jpg",
   },
 ];
 
@@ -42,40 +41,41 @@ const BOOSTER_BOXES = [
     price: "$99.99",
     tag: "COLLECTOR",
     tagColor: "bg-purple-500/20 text-purple-300 border-purple-500/30",
-    image: "/assets/generated/snakeymon-booster-box.dim_400x300.jpg",
+    image: "/assets/generated/basketball-card-placeholder.dim_400x560.jpg",
   },
   {
-    id: "premium-serpent-box",
-    name: "Premium Serpent Box",
+    id: "championship-box",
+    name: "Championship Box",
     contents: "12 packs + 1 guaranteed Legendary card",
     price: "$74.99",
     tag: "PREMIUM",
     tagColor: "bg-gold/20 text-gold border-gold/30",
-    image: "/assets/generated/snakeymon-booster-box.dim_400x300.jpg",
+    image: "/assets/generated/basketball-card-placeholder.dim_400x560.jpg",
   },
 ];
 
 function handleBoosterClick() {
-  toast.info("Booster packs coming soon! 🐍", {
-    description: "We're preparing the serpent stash. Stay tuned!",
+  toast.info("Card packs coming soon! 🏀", {
+    description: "We're stocking the shelves. Stay tuned!",
   });
 }
 
 export default function BoosterShop() {
   return (
     <section
+      id="boosters"
       className="relative py-20"
       style={{
         background:
-          "linear-gradient(180deg, oklch(0.11 0.02 160) 0%, oklch(0.09 0.005 265) 100%)",
+          "linear-gradient(180deg, oklch(0.12 0.04 45) 0%, oklch(0.09 0.005 265) 100%)",
       }}
     >
-      {/* Decorative snake-scale pattern */}
+      {/* Decorative court-line pattern */}
       <div
         className="pointer-events-none absolute inset-0 opacity-[0.03]"
         style={{
           backgroundImage:
-            "repeating-linear-gradient(60deg, oklch(0.9 0.15 150) 0px, transparent 2px, transparent 30px), repeating-linear-gradient(-60deg, oklch(0.9 0.15 150) 0px, transparent 2px, transparent 30px)",
+            "repeating-linear-gradient(60deg, oklch(0.9 0.15 50) 0px, transparent 2px, transparent 30px), repeating-linear-gradient(-60deg, oklch(0.9 0.15 50) 0px, transparent 2px, transparent 30px)",
         }}
       />
 
@@ -88,30 +88,30 @@ export default function BoosterShop() {
           transition={{ duration: 0.6 }}
           className="mb-14 text-center"
         >
-          <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-4 py-1.5">
-            <Package className="h-3.5 w-3.5 text-emerald-400" />
-            <span className="font-display text-xs font-bold uppercase tracking-[0.2em] text-emerald-400">
+          <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-orange-500/30 bg-orange-500/10 px-4 py-1.5">
+            <Package className="h-3.5 w-3.5 text-orange-400" />
+            <span className="font-display text-xs font-bold uppercase tracking-[0.2em] text-orange-400">
               Limited Edition
             </span>
           </div>
           <h2 className="font-display text-4xl font-black uppercase tracking-tight text-foreground md:text-5xl">
-            BOOSTER <span className="text-emerald-400">PACKS</span> &amp;{" "}
+            CARD <span className="text-orange-400">PACKS</span> &amp;{" "}
             <span className="text-gold">BOXES</span>
           </h2>
           <p className="mx-auto mt-3 max-w-lg text-sm text-muted-foreground">
-            Tear open a pack and discover your serpent destiny. Every pack
-            guaranteed to strike.
+            Tear open a pack and discover your next favorite hooper. Every pack
+            guaranteed to deliver collector-quality cards.
           </p>
         </motion.div>
 
         {/* Booster Packs */}
         <div className="mb-12">
           <div className="mb-6 flex items-center gap-3">
-            <PackageOpen className="h-5 w-5 text-emerald-400" />
+            <PackageOpen className="h-5 w-5 text-orange-400" />
             <h3 className="font-display text-xl font-black uppercase tracking-widest text-foreground/80">
-              Booster Packs
+              Card Packs
             </h3>
-            <div className="h-px flex-1 bg-emerald-500/20" />
+            <div className="h-px flex-1 bg-orange-500/20" />
           </div>
 
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
@@ -159,7 +159,7 @@ export default function BoosterShop() {
                     </span>
                     <Button
                       size="sm"
-                      className="bg-emerald-500/20 font-display text-xs font-black uppercase tracking-widest text-emerald-300 hover:bg-emerald-500/40"
+                      className="bg-orange-500/20 font-display text-xs font-black uppercase tracking-widest text-orange-300 hover:bg-orange-500/40"
                       onClick={handleBoosterClick}
                       data-ocid={`booster.pack.button.${i + 1}`}
                     >
@@ -177,7 +177,7 @@ export default function BoosterShop() {
           <div className="mb-6 flex items-center gap-3">
             <Package className="h-5 w-5 text-gold" />
             <h3 className="font-display text-xl font-black uppercase tracking-widest text-foreground/80">
-              Booster Boxes
+              Card Boxes
             </h3>
             <div className="h-px flex-1 bg-gold/20" />
           </div>

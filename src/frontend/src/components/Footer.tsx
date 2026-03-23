@@ -10,20 +10,20 @@ export default function Footer() {
         <div className="grid grid-cols-1 gap-10 md:grid-cols-4">
           {/* Brand */}
           <div className="md:col-span-2">
-            <div className="font-display text-2xl font-black tracking-tight text-emerald-400">
-              🐍 SNAKEYMON
+            <div className="font-display text-2xl font-black tracking-tight text-orange-400">
+              🏀 BASKIN HOOPERS
             </div>
             <p className="mt-3 max-w-sm text-sm text-muted-foreground">
-              Collect, trade, and battle the rarest serpent cards in existence.
-              From humble Commons to the mythical Legendaries.
+              Custom-made basketball cards for serious collectors. From Common
+              rookies to Legendary all-stars — your collection starts here.
             </p>
             <div className="mt-4 text-xs text-muted-foreground">
               Contact:{" "}
               <a
-                href="mailto:info@snakeymon.io"
-                className="text-emerald-400 hover:underline"
+                href="mailto:info@baskinhoopers.com"
+                className="text-orange-400 hover:underline"
               >
-                info@snakeymon.io
+                info@baskinhoopers.com
               </a>
             </div>
           </div>
@@ -31,7 +31,7 @@ export default function Footer() {
           {/* Shop */}
           <div>
             <h4 className="mb-4 font-display text-xs font-black uppercase tracking-widest text-foreground/60">
-              Collection
+              Collections
             </h4>
             <ul className="space-y-2 text-sm">
               {[
@@ -40,12 +40,12 @@ export default function Footer() {
                 "Epic",
                 "Rare",
                 "Common",
-                "Booster Packs",
+                "Card Packs",
               ].map((item) => (
                 <li key={item}>
                   <a
                     href="/"
-                    className="text-muted-foreground transition-colors hover:text-emerald-400"
+                    className="text-muted-foreground transition-colors hover:text-orange-400"
                   >
                     {item}
                   </a>
@@ -62,14 +62,14 @@ export default function Footer() {
             <ul className="space-y-2 text-sm">
               {[
                 { label: "About", href: "/#about" },
-                { label: "Serpent Dex", href: "/" },
+                { label: "All Cards", href: "/" },
                 { label: "FAQ", href: "/#faq" },
                 { label: "Shipping", href: "/#shipping" },
               ].map((item) => (
                 <li key={item.label}>
                   <a
                     href={item.href}
-                    className="text-muted-foreground transition-colors hover:text-emerald-400"
+                    className="text-muted-foreground transition-colors hover:text-orange-400"
                   >
                     {item.label}
                   </a>
@@ -80,7 +80,7 @@ export default function Footer() {
         </div>
 
         <div className="mt-10 flex flex-col items-center justify-between gap-4 border-t border-border pt-8 text-xs text-muted-foreground sm:flex-row">
-          <span>© {year} Snakeymon. All rights reserved.</span>
+          <span>© {year} Baskin Hoopers. All rights reserved.</span>
           <a
             href={`https://caffeine.ai?utm_source=caffeine-footer&utm_medium=referral&utm_content=${hostname}`}
             target="_blank"
@@ -88,8 +88,8 @@ export default function Footer() {
             className="flex items-center gap-1 text-muted-foreground/60 transition-colors hover:text-muted-foreground"
           >
             Built with{" "}
-            <Heart className="h-3 w-3 fill-emerald-400 text-emerald-400" />{" "}
-            using caffeine.ai
+            <Heart className="h-3 w-3 fill-orange-400 text-orange-400" /> using
+            caffeine.ai
           </a>
         </div>
       </div>
