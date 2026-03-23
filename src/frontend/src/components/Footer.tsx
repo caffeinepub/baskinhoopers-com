@@ -10,20 +10,20 @@ export default function Footer() {
         <div className="grid grid-cols-1 gap-10 md:grid-cols-4">
           {/* Brand */}
           <div className="md:col-span-2">
-            <div className="font-display text-2xl font-black tracking-tight text-gold">
-              🏀 BASKIN HOOPERS
+            <div className="font-display text-2xl font-black tracking-tight text-emerald-400">
+              🐍 SNAKEYMON
             </div>
             <p className="mt-3 max-w-sm text-sm text-muted-foreground">
-              Premium hand-crafted basketball trading cards for serious
-              collectors. Every card tells a story.
+              Collect, trade, and battle the rarest serpent cards in existence.
+              From humble Commons to the mythical Legendaries.
             </p>
             <div className="mt-4 text-xs text-muted-foreground">
               Contact:{" "}
               <a
-                href="mailto:info@baskethoopers.com"
-                className="text-gold hover:underline"
+                href="mailto:info@snakeymon.io"
+                className="text-emerald-400 hover:underline"
               >
-                info@baskethoopers.com
+                info@snakeymon.io
               </a>
             </div>
           </div>
@@ -31,21 +31,26 @@ export default function Footer() {
           {/* Shop */}
           <div>
             <h4 className="mb-4 font-display text-xs font-black uppercase tracking-widest text-foreground/60">
-              Shop
+              Collection
             </h4>
             <ul className="space-y-2 text-sm">
-              {["All Cards", "Legendary", "Epic", "Rare", "Common"].map(
-                (item) => (
-                  <li key={item}>
-                    <a
-                      href="/"
-                      className="text-muted-foreground transition-colors hover:text-gold"
-                    >
-                      {item}
-                    </a>
-                  </li>
-                ),
-              )}
+              {[
+                "All Cards",
+                "Legendary",
+                "Epic",
+                "Rare",
+                "Common",
+                "Booster Packs",
+              ].map((item) => (
+                <li key={item}>
+                  <a
+                    href="/"
+                    className="text-muted-foreground transition-colors hover:text-emerald-400"
+                  >
+                    {item}
+                  </a>
+                </li>
+              ))}
             </ul>
           </div>
 
@@ -56,18 +61,15 @@ export default function Footer() {
             </h4>
             <ul className="space-y-2 text-sm">
               {[
-                { label: "About Us", href: "/#about" },
-                {
-                  label: "Custom Cards",
-                  href: "mailto:info@baskethoopers.com",
-                },
+                { label: "About", href: "/#about" },
+                { label: "Serpent Dex", href: "/" },
                 { label: "FAQ", href: "/#faq" },
                 { label: "Shipping", href: "/#shipping" },
               ].map((item) => (
                 <li key={item.label}>
                   <a
                     href={item.href}
-                    className="text-muted-foreground transition-colors hover:text-gold"
+                    className="text-muted-foreground transition-colors hover:text-emerald-400"
                   >
                     {item.label}
                   </a>
@@ -78,15 +80,16 @@ export default function Footer() {
         </div>
 
         <div className="mt-10 flex flex-col items-center justify-between gap-4 border-t border-border pt-8 text-xs text-muted-foreground sm:flex-row">
-          <span>© {year} Baskin Hoopers. All rights reserved.</span>
+          <span>© {year} Snakeymon. All rights reserved.</span>
           <a
             href={`https://caffeine.ai?utm_source=caffeine-footer&utm_medium=referral&utm_content=${hostname}`}
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center gap-1 text-muted-foreground/60 transition-colors hover:text-muted-foreground"
           >
-            Built with <Heart className="h-3 w-3 fill-gold text-gold" /> using
-            caffeine.ai
+            Built with{" "}
+            <Heart className="h-3 w-3 fill-emerald-400 text-emerald-400" />{" "}
+            using caffeine.ai
           </a>
         </div>
       </div>
