@@ -15,6 +15,7 @@ import { CartProvider } from "./context/CartContext";
 import { InternetIdentityProvider } from "./hooks/useInternetIdentity";
 import CancelPage from "./pages/CancelPage";
 import HomePage from "./pages/HomePage";
+import OrdersPage from "./pages/OrdersPage";
 import SuccessPage from "./pages/SuccessPage";
 
 const queryClient = new QueryClient();
@@ -52,12 +53,18 @@ const cancelRoute = createRoute({
   path: "/cancel",
   component: CancelPage,
 });
+const ordersRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/orders",
+  component: OrdersPage,
+});
 
 const routeTree = rootRoute.addChildren([
   homeRoute,
   adminRoute,
   successRoute,
   cancelRoute,
+  ordersRoute,
 ]);
 const router = createRouter({ routeTree });
 

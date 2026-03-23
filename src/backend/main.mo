@@ -2,12 +2,12 @@ import List "mo:core/List";
 import Map "mo:core/Map";
 import Principal "mo:core/Principal";
 import Nat "mo:core/Nat";
-import Blob "mo:core/Blob";
-import Runtime "mo:core/Runtime";
 import Order "mo:core/Order";
+import Runtime "mo:core/Runtime";
 import Time "mo:core/Time";
 import Text "mo:core/Text";
 import Array "mo:core/Array";
+import Blob "mo:core/Blob";
 import Iter "mo:core/Iter";
 import MixinAuthorization "authorization/MixinAuthorization";
 import MixinStorage "blob-storage/Mixin";
@@ -15,6 +15,9 @@ import AccessControl "authorization/access-control";
 import Stripe "stripe/stripe";
 import Storage "blob-storage/Storage";
 import OutCall "http-outcalls/outcall";
+import Migration "migration";
+
+(with migration = Migration.run)
 
 actor {
   module Card {
@@ -29,6 +32,10 @@ actor {
         case (#equal) { Text.compare(history1.id, history2.id) };
         case (order) { order };
       };
+    };
+
+    public func compareByMostRecent(history1 : OrderHistory, history2 : OrderHistory) : Order.Order {
+      compareByCreatedAt(history2, history1);
     };
   };
 
@@ -47,12 +54,38 @@ actor {
     createdAt : Nat;
   };
 
+  public type ShippingAddress = {
+    name : Text;
+    email : Text;
+    street : Text;
+    city : Text;
+    state : Text;
+    zip : Text;
+    country : Text;
+  };
+
+  public type OrderStatus = {
+    #pending;
+    #printing;
+    #shipped;
+    #delivered;
+  };
+
   public type OrderHistory = {
     id : OrderId;
     buyer : Principal;
     cardIds : [CardId];
     totalPrice : Nat;
     createdAt : Nat;
+    shippingAddress : ShippingAddress;
+    status : OrderStatus;
+    trackingNumber : ?Text;
+  };
+
+  public type OrderHistoryUpdate = {
+    id : OrderId;
+    status : OrderStatus;
+    trackingNumber : ?Text;
   };
 
   public type Cart = {
@@ -79,6 +112,7 @@ actor {
 
   var stripeConfiguration : ?Stripe.StripeConfiguration = null;
 
+  // --------- Stripe Integration ---------
   public query func isStripeConfigured() : async Bool {
     stripeConfiguration != null;
   };
@@ -226,7 +260,7 @@ actor {
   };
 
   // --------- Orders ---------
-  public shared ({ caller }) func placeOrder() : async OrderId {
+  public shared ({ caller }) func placeOrder(shippingAddress : ShippingAddress) : async OrderId {
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
       Runtime.trap("Unauthorized: Only users can perform this action");
     };
@@ -260,7 +294,7 @@ actor {
     };
 
     let orderId = idMapToText(orders) # "-" # caller.toText();
-    let createdAt = Time.now();
+    let createdAt = Time.now().toNat();
     orders.add(
       orderId,
       {
@@ -268,10 +302,13 @@ actor {
         buyer = caller;
         cardIds = cart.items;
         totalPrice = arraySum(cart.items.map(func(id) { switch (cards.get(id)) { case (null) { Runtime.trap("Card not found") }; case (?card) { card.priceInCents } } }));
-        createdAt = createdAt.toNat();
+        createdAt;
+        shippingAddress;
+        status = #pending;
+        trackingNumber = null;
       },
     );
-    carts.add(caller, { items = []; totalPrice = 0; createdAt = createdAt.toNat() });
+    carts.add(caller, { items = []; totalPrice = 0; createdAt });
     orderId;
   };
 
@@ -280,6 +317,31 @@ actor {
       Runtime.trap("Unauthorized: Can only view your own orders");
     };
     orders.values().toArray().filter(func(order) { order.buyer == buyer }).sort(OrderHistory.compareByCreatedAt);
+  };
+
+  public query ({ caller }) func getAllOrders() : async [OrderHistory] {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
+      Runtime.trap("Unauthorized: Only admins can view all orders");
+    };
+    orders.values().toArray().sort(OrderHistory.compareByMostRecent);
+  };
+
+  public shared ({ caller }) func updateOrderStatus(update : OrderHistoryUpdate) : async () {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
+      Runtime.trap("Unauthorized: Only admins can update order status");
+    };
+
+    let order = switch (orders.get(update.id)) {
+      case (null) { Runtime.trap("Order not found: " # update.id) };
+      case (?order) { order };
+    };
+
+    let updatedOrder = {
+      order with
+      status = update.status;
+      trackingNumber = update.trackingNumber;
+    };
+    orders.add(update.id, updatedOrder);
   };
 
   // --------- Helper Functions ---------

@@ -1,3 +1,4 @@
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -9,18 +10,30 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { useNavigate } from "@tanstack/react-router";
-import { Loader2, Package, Plus, Shield, Trash2, Upload } from "lucide-react";
+import {
+  Loader2,
+  Package,
+  Plus,
+  Printer,
+  Shield,
+  Trash2,
+  Upload,
+} from "lucide-react";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
-import { ExternalBlob } from "../backend";
+import { ExternalBlob, OrderStatus } from "../backend";
+import type { OrderHistory } from "../backend";
 import { useInternetIdentity } from "../hooks/useInternetIdentity";
 import {
+  useAllOrders,
   useCards,
   useDeleteCard,
   useIsAdmin,
   useUpdateCard,
+  useUpdateOrderStatus,
 } from "../hooks/useQueries";
 
 const RARITIES = ["Common", "Rare", "Epic", "Legendary"];
@@ -32,11 +45,193 @@ const RARITY_COLORS: Record<string, string> = {
   Legendary: "bg-gold/20 text-gold",
 };
 
+const STATUS_OPTIONS = [
+  { value: OrderStatus.pending, label: "Pending" },
+  { value: OrderStatus.printing, label: "Printing" },
+  { value: OrderStatus.shipped, label: "Shipped" },
+  { value: OrderStatus.delivered, label: "Delivered" },
+];
+
+const STATUS_COLORS: Record<OrderStatus, string> = {
+  [OrderStatus.pending]: "bg-muted text-muted-foreground border-border",
+  [OrderStatus.printing]: "bg-amber-500/20 text-amber-400 border-amber-500/30",
+  [OrderStatus.shipped]: "bg-blue-500/20 text-blue-400 border-blue-500/30",
+  [OrderStatus.delivered]:
+    "bg-emerald-500/20 text-emerald-400 border-emerald-500/30",
+};
+
+function OrderRow({
+  order,
+  cards,
+}: { order: OrderHistory; cards: any[] | undefined }) {
+  const updateStatus = useUpdateOrderStatus();
+  const [status, setStatus] = useState<OrderStatus>(order.status);
+  const [trackingNumber, setTrackingNumber] = useState(
+    order.trackingNumber ?? "",
+  );
+  const [saving, setSaving] = useState(false);
+
+  async function handleSave() {
+    setSaving(true);
+    try {
+      await updateStatus.mutateAsync({
+        id: order.id,
+        status,
+        trackingNumber: trackingNumber || undefined,
+      });
+      toast.success("Order updated.");
+    } catch {
+      toast.error("Failed to update order.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  function handlePrint() {
+    const orderCards = order.cardIds
+      .map((id) => cards?.find((c) => c.id === id))
+      .filter(Boolean);
+    const printWindow = window.open("", "_blank");
+    if (!printWindow) return;
+    const cardsHtml = orderCards
+      .map(
+        (card) => `
+        <div style="border:2px solid #c9a227;border-radius:12px;padding:20px;text-align:center;width:200px;display:inline-block;margin:8px;background:#1a1a1a;color:#fff">
+          ${card!.imageId?.getDirectURL() ? `<img src="${card!.imageId.getDirectURL()}" style="width:160px;height:200px;object-fit:cover;border-radius:8px;margin-bottom:10px" />` : ""}
+          <div style="font-family:sans-serif;font-size:14px;font-weight:900;text-transform:uppercase;letter-spacing:2px;color:#c9a227">${card!.name}</div>
+          <div style="font-size:11px;color:#888;margin-top:4px">${card!.rarity}</div>
+        </div>
+      `,
+      )
+      .join("");
+    printWindow.document.write(`
+      <!DOCTYPE html><html><head><title>Print Order #${order.id.slice(0, 8)}</title>
+      <style>body{background:#111;margin:0;padding:20px;font-family:sans-serif} @media print{body{background:#fff}}</style></head>
+      <body>
+        <div style="color:#c9a227;font-size:24px;font-weight:900;text-transform:uppercase;margin-bottom:8px">Snakeymon Order</div>
+        <div style="color:#888;font-size:12px;margin-bottom:4px">Order #${order.id.slice(0, 12)}...</div>
+        <div style="color:#888;font-size:12px;margin-bottom:16px">Ship to: ${order.shippingAddress.name}, ${order.shippingAddress.street}, ${order.shippingAddress.city}, ${order.shippingAddress.state} ${order.shippingAddress.zip}, ${order.shippingAddress.country}</div>
+        <div>${cardsHtml}</div>
+        <script>window.print();</script>
+      </body></html>
+    `);
+    printWindow.document.close();
+  }
+
+  const orderCards = order.cardIds
+    .map((id) => cards?.find((c) => c.id === id))
+    .filter(Boolean);
+
+  return (
+    <div className="rounded-xl border border-border bg-secondary/20 p-5 space-y-4">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <p className="font-mono text-xs text-muted-foreground">
+            #{order.id.slice(0, 16)}...
+          </p>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Buyer: {order.buyer.toString().slice(0, 12)}...
+          </p>
+          <p className="mt-1 text-xs text-foreground/80">
+            {order.shippingAddress.name} · {order.shippingAddress.street},{" "}
+            {order.shippingAddress.city}, {order.shippingAddress.state}{" "}
+            {order.shippingAddress.zip}, {order.shippingAddress.country}
+          </p>
+          <p className="text-xs text-muted-foreground">
+            {order.shippingAddress.email}
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <Badge
+            className={`font-display text-xs font-bold uppercase tracking-wider border ${STATUS_COLORS[order.status]}`}
+          >
+            {order.status}
+          </Badge>
+          <span className="font-display text-base font-black text-gold">
+            ${(Number(order.totalPrice) / 100).toFixed(2)}
+          </span>
+        </div>
+      </div>
+
+      <div className="flex flex-wrap gap-1">
+        {orderCards.length > 0 ? (
+          orderCards.map((card) => (
+            <span
+              key={card!.id}
+              className="rounded-full border border-border bg-card px-2 py-0.5 font-display text-[10px] font-bold uppercase tracking-wide text-foreground/70"
+            >
+              {card!.name}
+            </span>
+          ))
+        ) : (
+          <span className="text-xs text-muted-foreground">
+            {order.cardIds.length} card(s)
+          </span>
+        )}
+      </div>
+
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+        <Select
+          value={status}
+          onValueChange={(v) => setStatus(v as OrderStatus)}
+        >
+          <SelectTrigger
+            className="border-border bg-input text-foreground"
+            data-ocid="admin.select"
+          >
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent className="border-border bg-popover text-foreground">
+            {STATUS_OPTIONS.map((opt) => (
+              <SelectItem
+                key={opt.value}
+                value={opt.value}
+                className="focus:bg-muted"
+              >
+                {opt.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        <Input
+          value={trackingNumber}
+          onChange={(e) => setTrackingNumber(e.target.value)}
+          placeholder="Tracking number (optional)"
+          className="border-border bg-input text-foreground placeholder:text-muted-foreground"
+          data-ocid="admin.input"
+        />
+
+        <div className="flex gap-2">
+          <Button
+            onClick={handleSave}
+            disabled={saving}
+            className="flex-1 bg-gold font-display font-black uppercase tracking-wider text-primary-foreground hover:bg-gold-dim"
+            data-ocid="admin.save_button"
+          >
+            {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : "SAVE"}
+          </Button>
+          <Button
+            variant="outline"
+            onClick={handlePrint}
+            className="border-border font-display font-bold uppercase hover:border-gold hover:text-gold"
+            data-ocid="admin.secondary_button"
+            title="Print order"
+          >
+            <Printer className="h-4 w-4" />
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function AdminPanel() {
   const { identity, login } = useInternetIdentity();
   const navigate = useNavigate();
   const { data: isAdmin, isLoading: adminLoading } = useIsAdmin();
   const { data: cards, isLoading: cardsLoading } = useCards();
+  const { data: allOrders, isLoading: ordersLoading } = useAllOrders();
   const deleteCard = useDeleteCard();
   const updateCard = useUpdateCard();
   const fileRef = useRef<HTMLInputElement>(null);
@@ -178,264 +373,341 @@ export default function AdminPanel() {
           <span className="text-gold">Admin</span> Panel
         </h1>
         <p className="mt-2 text-muted-foreground">
-          Manage your basketball card inventory.
+          Manage your Snakeymon card inventory and orders.
         </p>
       </div>
 
-      <div className="grid grid-cols-1 gap-10 lg:grid-cols-2">
-        {/* Add Card Form */}
-        <div className="rounded-xl border border-border bg-card p-6">
-          <h2 className="mb-6 font-display text-2xl font-black uppercase tracking-tight text-foreground">
-            <Plus className="mr-2 inline h-5 w-5 text-gold" />
-            Add New Card
-          </h2>
-          <form onSubmit={handleSubmit} className="space-y-5">
-            <div>
-              <Label
-                htmlFor="card-name"
-                className="font-display text-xs font-bold uppercase tracking-widest text-foreground/70"
-              >
-                Card Name *
-              </Label>
-              <Input
-                id="card-name"
-                value={form.name}
-                onChange={(e) =>
-                  setForm((p) => ({ ...p, name: e.target.value }))
-                }
-                placeholder="e.g. LeBron Rookie Foil"
-                className="mt-1 border-border bg-input text-foreground placeholder:text-muted-foreground"
-                data-ocid="admin.input"
-              />
-            </div>
-            <div>
-              <Label
-                htmlFor="card-desc"
-                className="font-display text-xs font-bold uppercase tracking-widest text-foreground/70"
-              >
-                Description
-              </Label>
-              <Textarea
-                id="card-desc"
-                value={form.description}
-                onChange={(e) =>
-                  setForm((p) => ({ ...p, description: e.target.value }))
-                }
-                placeholder="Card description..."
-                rows={2}
-                className="mt-1 border-border bg-input text-foreground placeholder:text-muted-foreground"
-                data-ocid="admin.textarea"
-              />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label
-                  htmlFor="card-price"
-                  className="font-display text-xs font-bold uppercase tracking-widest text-foreground/70"
-                >
-                  Price (USD) *
-                </Label>
-                <Input
-                  id="card-price"
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  value={form.price}
-                  onChange={(e) =>
-                    setForm((p) => ({ ...p, price: e.target.value }))
-                  }
-                  placeholder="9.99"
-                  className="mt-1 border-border bg-input text-foreground"
-                  data-ocid="admin.input"
-                />
-              </div>
-              <div>
-                <Label
-                  htmlFor="card-stock"
-                  className="font-display text-xs font-bold uppercase tracking-widest text-foreground/70"
-                >
-                  Stock
-                </Label>
-                <Input
-                  id="card-stock"
-                  type="number"
-                  min="0"
-                  value={form.stock}
-                  onChange={(e) =>
-                    setForm((p) => ({ ...p, stock: e.target.value }))
-                  }
-                  placeholder="10"
-                  className="mt-1 border-border bg-input text-foreground"
-                  data-ocid="admin.input"
-                />
-              </div>
-            </div>
-            <div>
-              <Label className="font-display text-xs font-bold uppercase tracking-widest text-foreground/70">
-                Rarity
-              </Label>
-              <Select
-                value={form.rarity}
-                onValueChange={(v) => setForm((p) => ({ ...p, rarity: v }))}
-              >
-                <SelectTrigger
-                  className="mt-1 border-border bg-input text-foreground"
-                  data-ocid="admin.select"
-                >
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className="border-border bg-popover text-foreground">
-                  {RARITIES.map((r) => (
-                    <SelectItem key={r} value={r} className="focus:bg-muted">
-                      {r}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label className="font-display text-xs font-bold uppercase tracking-widest text-foreground/70">
-                Card Image
-              </Label>
-              <button
-                type="button"
-                className="mt-1 flex w-full cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-border p-6 transition-colors hover:border-gold/50"
-                onClick={() => fileRef.current?.click()}
-                onKeyDown={(e) => e.key === "Enter" && fileRef.current?.click()}
-                data-ocid="admin.dropzone"
-              >
-                {imagePreview ? (
-                  <img
-                    src={imagePreview}
-                    alt="Preview"
-                    className="h-32 rounded-lg object-cover"
-                  />
-                ) : (
-                  <>
-                    <Upload className="mb-2 h-8 w-8 text-foreground/30" />
-                    <span className="font-display text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                      Click to upload image
-                    </span>
-                  </>
-                )}
-              </button>
-              <input
-                ref={fileRef}
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={handleImageChange}
-                data-ocid="admin.upload_button"
-              />
-            </div>
-            <Button
-              type="submit"
-              disabled={submitting}
-              className="w-full bg-gold font-display text-base font-black uppercase tracking-widest text-primary-foreground hover:bg-gold-dim"
-              data-ocid="admin.submit_button"
-            >
-              {submitting ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Adding Card...
-                </>
-              ) : (
-                <>
-                  <Plus className="mr-2 h-4 w-4" />
-                  ADD CARD
-                </>
-              )}
-            </Button>
-          </form>
-        </div>
-
-        {/* Card List */}
-        <div className="rounded-xl border border-border bg-card p-6">
-          <h2 className="mb-6 font-display text-2xl font-black uppercase tracking-tight text-foreground">
-            <Package className="mr-2 inline h-5 w-5 text-gold" />
+      <Tabs defaultValue="inventory" data-ocid="admin.tab">
+        <TabsList className="mb-8 border border-border bg-card">
+          <TabsTrigger
+            value="inventory"
+            className="font-display font-bold uppercase tracking-wider data-[state=active]:bg-gold data-[state=active]:text-primary-foreground"
+            data-ocid="admin.tab"
+          >
+            <Package className="mr-2 h-4 w-4" />
             Inventory
-            <span className="ml-2 text-sm font-bold text-muted-foreground">
-              ({cards?.length ?? 0} cards)
-            </span>
-          </h2>
-          {cardsLoading ? (
-            <div className="space-y-3" data-ocid="admin.loading_state">
-              {[1, 2, 3, 4].map((i) => (
-                <div
-                  key={i}
-                  className="flex items-center gap-3 rounded-lg border border-border p-3"
-                >
-                  <Skeleton className="h-12 w-9 rounded-md bg-muted" />
-                  <div className="flex-1 space-y-2">
-                    <Skeleton className="h-3 w-1/2 bg-muted" />
-                    <Skeleton className="h-3 w-1/3 bg-muted" />
+          </TabsTrigger>
+          <TabsTrigger
+            value="orders"
+            className="font-display font-bold uppercase tracking-wider data-[state=active]:bg-gold data-[state=active]:text-primary-foreground"
+            data-ocid="admin.tab"
+          >
+            <Printer className="mr-2 h-4 w-4" />
+            Orders
+            {allOrders && allOrders.length > 0 && (
+              <span className="ml-2 rounded-full bg-gold/20 px-2 py-0.5 font-display text-xs font-black text-gold">
+                {allOrders.length}
+              </span>
+            )}
+          </TabsTrigger>
+        </TabsList>
+
+        {/* Inventory Tab */}
+        <TabsContent value="inventory">
+          <div className="grid grid-cols-1 gap-10 lg:grid-cols-2">
+            {/* Add Card Form */}
+            <div className="rounded-xl border border-border bg-card p-6">
+              <h2 className="mb-6 font-display text-2xl font-black uppercase tracking-tight text-foreground">
+                <Plus className="mr-2 inline h-5 w-5 text-gold" />
+                Add New Card
+              </h2>
+              <form onSubmit={handleSubmit} className="space-y-5">
+                <div>
+                  <Label
+                    htmlFor="card-name"
+                    className="font-display text-xs font-bold uppercase tracking-widest text-foreground/70"
+                  >
+                    Card Name *
+                  </Label>
+                  <Input
+                    id="card-name"
+                    value={form.name}
+                    onChange={(e) =>
+                      setForm((p) => ({ ...p, name: e.target.value }))
+                    }
+                    placeholder="e.g. Emerald Coilstrike"
+                    className="mt-1 border-border bg-input text-foreground placeholder:text-muted-foreground"
+                    data-ocid="admin.input"
+                  />
+                </div>
+                <div>
+                  <Label
+                    htmlFor="card-desc"
+                    className="font-display text-xs font-bold uppercase tracking-widest text-foreground/70"
+                  >
+                    Description
+                  </Label>
+                  <Textarea
+                    id="card-desc"
+                    value={form.description}
+                    onChange={(e) =>
+                      setForm((p) => ({ ...p, description: e.target.value }))
+                    }
+                    placeholder="Card description..."
+                    rows={2}
+                    className="mt-1 border-border bg-input text-foreground placeholder:text-muted-foreground"
+                    data-ocid="admin.textarea"
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label
+                      htmlFor="card-price"
+                      className="font-display text-xs font-bold uppercase tracking-widest text-foreground/70"
+                    >
+                      Price (USD) *
+                    </Label>
+                    <Input
+                      id="card-price"
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      value={form.price}
+                      onChange={(e) =>
+                        setForm((p) => ({ ...p, price: e.target.value }))
+                      }
+                      placeholder="9.99"
+                      className="mt-1 border-border bg-input text-foreground"
+                      data-ocid="admin.input"
+                    />
+                  </div>
+                  <div>
+                    <Label
+                      htmlFor="card-stock"
+                      className="font-display text-xs font-bold uppercase tracking-widest text-foreground/70"
+                    >
+                      Stock
+                    </Label>
+                    <Input
+                      id="card-stock"
+                      type="number"
+                      min="0"
+                      value={form.stock}
+                      onChange={(e) =>
+                        setForm((p) => ({ ...p, stock: e.target.value }))
+                      }
+                      placeholder="10"
+                      className="mt-1 border-border bg-input text-foreground"
+                      data-ocid="admin.input"
+                    />
                   </div>
                 </div>
-              ))}
-            </div>
-          ) : cards?.length === 0 ? (
-            <div className="py-12 text-center" data-ocid="admin.empty_state">
-              <Package className="mx-auto mb-3 h-10 w-10 text-foreground/20" />
-              <p className="font-display text-sm font-bold uppercase tracking-wide text-foreground/40">
-                No cards yet
-              </p>
-            </div>
-          ) : (
-            <div className="max-h-[600px] space-y-3 overflow-y-auto pr-1">
-              {cards?.map((card, i) => (
-                <div
-                  key={card.id}
-                  className="flex items-center gap-3 rounded-lg border border-border bg-secondary/30 p-3 transition-colors hover:border-gold/30"
-                  data-ocid={`admin.item.${i + 1}`}
-                >
-                  <div className="h-12 w-9 flex-shrink-0 overflow-hidden rounded-md bg-muted">
-                    {card.imageId?.getDirectURL() ? (
+                <div>
+                  <Label className="font-display text-xs font-bold uppercase tracking-widest text-foreground/70">
+                    Rarity
+                  </Label>
+                  <Select
+                    value={form.rarity}
+                    onValueChange={(v) => setForm((p) => ({ ...p, rarity: v }))}
+                  >
+                    <SelectTrigger
+                      className="mt-1 border-border bg-input text-foreground"
+                      data-ocid="admin.select"
+                    >
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="border-border bg-popover text-foreground">
+                      {RARITIES.map((r) => (
+                        <SelectItem
+                          key={r}
+                          value={r}
+                          className="focus:bg-muted"
+                        >
+                          {r}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label className="font-display text-xs font-bold uppercase tracking-widest text-foreground/70">
+                    Card Image
+                  </Label>
+                  <button
+                    type="button"
+                    className="mt-1 flex w-full cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-border p-6 transition-colors hover:border-gold/50"
+                    onClick={() => fileRef.current?.click()}
+                    onKeyDown={(e) =>
+                      e.key === "Enter" && fileRef.current?.click()
+                    }
+                    data-ocid="admin.dropzone"
+                  >
+                    {imagePreview ? (
                       <img
-                        src={card.imageId.getDirectURL()}
-                        alt={card.name}
-                        className="h-full w-full object-cover"
+                        src={imagePreview}
+                        alt="Preview"
+                        className="h-32 rounded-lg object-cover"
                       />
                     ) : (
-                      <div className="flex h-full w-full items-center justify-center">
-                        <span className="font-display text-xs font-black text-foreground/30">
-                          {card.name.charAt(0)}
+                      <>
+                        <Upload className="mb-2 h-8 w-8 text-foreground/30" />
+                        <span className="font-display text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                          Click to upload image
                         </span>
-                      </div>
+                      </>
                     )}
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate font-display text-sm font-black uppercase tracking-tight text-foreground">
-                      {card.name}
-                    </p>
-                    <div className="mt-0.5 flex items-center gap-2">
-                      <span
-                        className={`rounded-full px-2 py-0.5 font-display text-[9px] font-black uppercase tracking-wider ${RARITY_COLORS[card.rarity] ?? RARITY_COLORS.Common}`}
-                      >
-                        {card.rarity}
-                      </span>
-                      <span className="font-display text-xs font-bold text-gold">
-                        ${(Number(card.priceInCents) / 100).toFixed(2)}
-                      </span>
-                      <span className="text-xs text-muted-foreground">
-                        Stock: {card.stock.toString()}
-                      </span>
-                    </div>
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => handleDelete(card.id, card.name)}
-                    className="h-8 w-8 flex-shrink-0 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
-                    data-ocid={`admin.delete_button.${i + 1}`}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
+                  </button>
+                  <input
+                    ref={fileRef}
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleImageChange}
+                    data-ocid="admin.upload_button"
+                  />
                 </div>
-              ))}
+                <Button
+                  type="submit"
+                  disabled={submitting}
+                  className="w-full bg-gold font-display text-base font-black uppercase tracking-widest text-primary-foreground hover:bg-gold-dim"
+                  data-ocid="admin.submit_button"
+                >
+                  {submitting ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Adding Card...
+                    </>
+                  ) : (
+                    <>
+                      <Plus className="mr-2 h-4 w-4" />
+                      ADD CARD
+                    </>
+                  )}
+                </Button>
+              </form>
             </div>
-          )}
-        </div>
-      </div>
+
+            {/* Card List */}
+            <div className="rounded-xl border border-border bg-card p-6">
+              <h2 className="mb-6 font-display text-2xl font-black uppercase tracking-tight text-foreground">
+                <Package className="mr-2 inline h-5 w-5 text-gold" />
+                Inventory
+                <span className="ml-2 text-sm font-bold text-muted-foreground">
+                  ({cards?.length ?? 0} cards)
+                </span>
+              </h2>
+              {cardsLoading ? (
+                <div className="space-y-3" data-ocid="admin.loading_state">
+                  {[1, 2, 3, 4].map((i) => (
+                    <div
+                      key={i}
+                      className="flex items-center gap-3 rounded-lg border border-border p-3"
+                    >
+                      <Skeleton className="h-12 w-9 rounded-md bg-muted" />
+                      <div className="flex-1 space-y-2">
+                        <Skeleton className="h-3 w-1/2 bg-muted" />
+                        <Skeleton className="h-3 w-1/3 bg-muted" />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : cards?.length === 0 ? (
+                <div
+                  className="py-12 text-center"
+                  data-ocid="admin.empty_state"
+                >
+                  <Package className="mx-auto mb-3 h-10 w-10 text-foreground/20" />
+                  <p className="font-display text-sm font-bold uppercase tracking-wide text-foreground/40">
+                    No cards yet
+                  </p>
+                </div>
+              ) : (
+                <div className="max-h-[600px] space-y-3 overflow-y-auto pr-1">
+                  {cards?.map((card, i) => (
+                    <div
+                      key={card.id}
+                      className="flex items-center gap-3 rounded-lg border border-border bg-secondary/30 p-3 transition-colors hover:border-gold/30"
+                      data-ocid={`admin.item.${i + 1}`}
+                    >
+                      <div className="h-12 w-9 flex-shrink-0 overflow-hidden rounded-md bg-muted">
+                        {card.imageId?.getDirectURL() ? (
+                          <img
+                            src={card.imageId.getDirectURL()}
+                            alt={card.name}
+                            className="h-full w-full object-cover"
+                          />
+                        ) : (
+                          <div className="flex h-full w-full items-center justify-center">
+                            <span className="font-display text-xs font-black text-foreground/30">
+                              {card.name.charAt(0)}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate font-display text-sm font-black uppercase tracking-tight text-foreground">
+                          {card.name}
+                        </p>
+                        <div className="mt-0.5 flex items-center gap-2">
+                          <span
+                            className={`rounded-full px-2 py-0.5 font-display text-[9px] font-black uppercase tracking-wider ${RARITY_COLORS[card.rarity] ?? RARITY_COLORS.Common}`}
+                          >
+                            {card.rarity}
+                          </span>
+                          <span className="font-display text-xs font-bold text-gold">
+                            ${(Number(card.priceInCents) / 100).toFixed(2)}
+                          </span>
+                          <span className="text-xs text-muted-foreground">
+                            Stock: {card.stock.toString()}
+                          </span>
+                        </div>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleDelete(card.id, card.name)}
+                        className="h-8 w-8 flex-shrink-0 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+                        data-ocid={`admin.delete_button.${i + 1}`}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </TabsContent>
+
+        {/* Orders Tab */}
+        <TabsContent value="orders">
+          <div className="rounded-xl border border-border bg-card p-6">
+            <h2 className="mb-6 font-display text-2xl font-black uppercase tracking-tight text-foreground">
+              <Printer className="mr-2 inline h-5 w-5 text-gold" />
+              Order Queue
+              <span className="ml-2 text-sm font-bold text-muted-foreground">
+                ({allOrders?.length ?? 0} orders)
+              </span>
+            </h2>
+            {ordersLoading ? (
+              <div className="space-y-4" data-ocid="admin.loading_state">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="rounded-xl border border-border p-5">
+                    <Skeleton className="mb-3 h-4 w-64 bg-muted" />
+                    <Skeleton className="mb-2 h-3 w-48 bg-muted" />
+                    <Skeleton className="h-8 w-full bg-muted" />
+                  </div>
+                ))}
+              </div>
+            ) : !allOrders || allOrders.length === 0 ? (
+              <div className="py-16 text-center" data-ocid="admin.empty_state">
+                <Printer className="mx-auto mb-3 h-10 w-10 text-foreground/20" />
+                <p className="font-display text-sm font-bold uppercase tracking-wide text-foreground/40">
+                  No orders yet
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {allOrders.map((order, i) => (
+                  <div key={order.id} data-ocid={`admin.item.${i + 1}`}>
+                    <OrderRow order={order} cards={cards} />
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

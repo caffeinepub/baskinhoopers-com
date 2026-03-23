@@ -43,18 +43,36 @@ export const Card = IDL.Record({
   'imageId' : ExternalBlob,
   'priceInCents' : IDL.Nat,
 });
+export const OrderId = IDL.Text;
+export const OrderStatus = IDL.Variant({
+  'shipped' : IDL.Null,
+  'printing' : IDL.Null,
+  'pending' : IDL.Null,
+  'delivered' : IDL.Null,
+});
+export const ShippingAddress = IDL.Record({
+  'zip' : IDL.Text,
+  'street' : IDL.Text,
+  'country' : IDL.Text,
+  'city' : IDL.Text,
+  'name' : IDL.Text,
+  'email' : IDL.Text,
+  'state' : IDL.Text,
+});
+export const OrderHistory = IDL.Record({
+  'id' : OrderId,
+  'status' : OrderStatus,
+  'trackingNumber' : IDL.Opt(IDL.Text),
+  'createdAt' : IDL.Nat,
+  'shippingAddress' : ShippingAddress,
+  'buyer' : IDL.Principal,
+  'cardIds' : IDL.Vec(CardId),
+  'totalPrice' : IDL.Nat,
+});
 export const UserProfile = IDL.Record({ 'name' : IDL.Text });
 export const Cart = IDL.Record({
   'createdAt' : IDL.Nat,
   'items' : IDL.Vec(CardId),
-  'totalPrice' : IDL.Nat,
-});
-export const OrderId = IDL.Text;
-export const OrderHistory = IDL.Record({
-  'id' : OrderId,
-  'createdAt' : IDL.Nat,
-  'buyer' : IDL.Principal,
-  'cardIds' : IDL.Vec(CardId),
   'totalPrice' : IDL.Nat,
 });
 export const StripeSessionStatus = IDL.Variant({
@@ -85,6 +103,11 @@ export const TransformationOutput = IDL.Record({
   'status' : IDL.Nat,
   'body' : IDL.Vec(IDL.Nat8),
   'headers' : IDL.Vec(http_header),
+});
+export const OrderHistoryUpdate = IDL.Record({
+  'id' : OrderId,
+  'status' : OrderStatus,
+  'trackingNumber' : IDL.Opt(IDL.Text),
 });
 
 export const idlService = IDL.Service({
@@ -125,6 +148,7 @@ export const idlService = IDL.Service({
     ),
   'deleteCard' : IDL.Func([CardId], [], []),
   'getAllCards' : IDL.Func([], [IDL.Vec(Card)], ['query']),
+  'getAllOrders' : IDL.Func([], [IDL.Vec(OrderHistory)], ['query']),
   'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
   'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
   'getCard' : IDL.Func([CardId], [Card], ['query']),
@@ -138,7 +162,7 @@ export const idlService = IDL.Service({
     ),
   'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
   'isStripeConfigured' : IDL.Func([], [IDL.Bool], ['query']),
-  'placeOrder' : IDL.Func([], [OrderId], []),
+  'placeOrder' : IDL.Func([ShippingAddress], [OrderId], []),
   'removeFromCart' : IDL.Func([CardId], [], []),
   'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
   'setStripeConfiguration' : IDL.Func([StripeConfiguration], [], []),
@@ -148,6 +172,7 @@ export const idlService = IDL.Service({
       ['query'],
     ),
   'updateCard' : IDL.Func([Card], [], []),
+  'updateOrderStatus' : IDL.Func([OrderHistoryUpdate], [], []),
 });
 
 export const idlInitArgs = [];
@@ -188,18 +213,36 @@ export const idlFactory = ({ IDL }) => {
     'imageId' : ExternalBlob,
     'priceInCents' : IDL.Nat,
   });
+  const OrderId = IDL.Text;
+  const OrderStatus = IDL.Variant({
+    'shipped' : IDL.Null,
+    'printing' : IDL.Null,
+    'pending' : IDL.Null,
+    'delivered' : IDL.Null,
+  });
+  const ShippingAddress = IDL.Record({
+    'zip' : IDL.Text,
+    'street' : IDL.Text,
+    'country' : IDL.Text,
+    'city' : IDL.Text,
+    'name' : IDL.Text,
+    'email' : IDL.Text,
+    'state' : IDL.Text,
+  });
+  const OrderHistory = IDL.Record({
+    'id' : OrderId,
+    'status' : OrderStatus,
+    'trackingNumber' : IDL.Opt(IDL.Text),
+    'createdAt' : IDL.Nat,
+    'shippingAddress' : ShippingAddress,
+    'buyer' : IDL.Principal,
+    'cardIds' : IDL.Vec(CardId),
+    'totalPrice' : IDL.Nat,
+  });
   const UserProfile = IDL.Record({ 'name' : IDL.Text });
   const Cart = IDL.Record({
     'createdAt' : IDL.Nat,
     'items' : IDL.Vec(CardId),
-    'totalPrice' : IDL.Nat,
-  });
-  const OrderId = IDL.Text;
-  const OrderHistory = IDL.Record({
-    'id' : OrderId,
-    'createdAt' : IDL.Nat,
-    'buyer' : IDL.Principal,
-    'cardIds' : IDL.Vec(CardId),
     'totalPrice' : IDL.Nat,
   });
   const StripeSessionStatus = IDL.Variant({
@@ -227,6 +270,11 @@ export const idlFactory = ({ IDL }) => {
     'status' : IDL.Nat,
     'body' : IDL.Vec(IDL.Nat8),
     'headers' : IDL.Vec(http_header),
+  });
+  const OrderHistoryUpdate = IDL.Record({
+    'id' : OrderId,
+    'status' : OrderStatus,
+    'trackingNumber' : IDL.Opt(IDL.Text),
   });
   
   return IDL.Service({
@@ -267,6 +315,7 @@ export const idlFactory = ({ IDL }) => {
       ),
     'deleteCard' : IDL.Func([CardId], [], []),
     'getAllCards' : IDL.Func([], [IDL.Vec(Card)], ['query']),
+    'getAllOrders' : IDL.Func([], [IDL.Vec(OrderHistory)], ['query']),
     'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
     'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
     'getCard' : IDL.Func([CardId], [Card], ['query']),
@@ -280,7 +329,7 @@ export const idlFactory = ({ IDL }) => {
       ),
     'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
     'isStripeConfigured' : IDL.Func([], [IDL.Bool], ['query']),
-    'placeOrder' : IDL.Func([], [OrderId], []),
+    'placeOrder' : IDL.Func([ShippingAddress], [OrderId], []),
     'removeFromCart' : IDL.Func([CardId], [], []),
     'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
     'setStripeConfiguration' : IDL.Func([StripeConfiguration], [], []),
@@ -290,6 +339,7 @@ export const idlFactory = ({ IDL }) => {
         ['query'],
       ),
     'updateCard' : IDL.Func([Card], [], []),
+    'updateOrderStatus' : IDL.Func([OrderHistoryUpdate], [], []),
   });
 };
 

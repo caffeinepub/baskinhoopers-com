@@ -1,32 +1,42 @@
-# Snakeymon-IO
+# snakeymon-io
 
 ## Current State
-- TCG-style storefront with a card grid, hero, cart, Stripe checkout, and admin panel
-- Sample cards are basketball-themed (holdover from previous project)
-- 6 sample cards shown when backend is empty
-- No booster packs or booster boxes
+- E-commerce app with card shop, cart, Stripe checkout, and admin panel
+- OrderHistory type has: id, buyer, cardIds, totalPrice, createdAt
+- No shipping address, no order status, no admin order management
+- Admin panel has card inventory management only
+- Success page shows generic confirmation
 
 ## Requested Changes (Diff)
 
 ### Add
-- More snake-themed sample cards (expand to ~12 cards) with proper Snakeymon names, types, HP, moves, and flavor text
-- Booster Packs section: display 2-3 pack options (e.g. Standard Pack 5 cards, Rare Pack 3 guaranteed rares, Legendary Pack 1 guaranteed legendary)
-- Booster Boxes section: display 1-2 box options (e.g. Base Set Box with 24 packs, Premium Box with 12 packs + guaranteed legendary)
-- Each pack/box shows contents description, price, and Add to Cart button
-- A new dedicated shop section on HomePage with tabs or headings for: Individual Cards, Booster Packs, Booster Boxes
+- `ShippingAddress` type: name, email, street, city, state, zip, country
+- `status` field on OrderHistory: `#pending | #printing | #shipped | #delivered`
+- `shippingAddress` field on OrderHistory
+- `trackingNumber` optional field on OrderHistory
+- Backend: `placeOrderWithShipping(shippingAddress)` replacing or extending placeOrder
+- Backend: `getAllOrders()` admin-only, returns all orders sorted by createdAt desc
+- Backend: `updateOrderStatus(orderId, status, ?trackingNumber)` admin-only
+- Frontend: Shipping address form shown at checkout (before payment or on success page)
+- Frontend: `/orders` route - user's order history with status badges and tracking numbers
+- Frontend: Admin panel "Orders" tab - list all orders, update status, mark as shipped with tracking number, print view button
+- Frontend: Order tracking page at `/track/:orderId` - public lookup by order ID
 
 ### Modify
-- Replace all basketball-themed SAMPLE_CARDS with Snakeymon-themed cards (Food Snakeyn, Mewsnark, and ~10 more snake monsters)
-- Expand card grid to show more cards (at least 8 in grid)
-- Hero text and branding updated to Snakeymon theme
+- AdminPanel: add "Orders" tab alongside inventory
+- SuccessPage: show order ID and link to track order
+- CartDrawer/checkout flow: collect shipping address before/during checkout
 
 ### Remove
-- Basketball references in sample data and hero copy
+- Nothing removed
 
 ## Implementation Plan
-1. Replace SAMPLE_CARDS in HomePage.tsx with 12 Snakeymon cards (varied rarities, snake names, HP/moves flavor)
-2. Create a BoosterShop component showing packs and boxes as product cards with images, content descriptions, and prices
-3. Add pack/box sample data as frontend-only static definitions (name, price, contents, image)
-4. Update HomePage to include BoosterShop section below the card grid
-5. Regenerate card art images for snake theme
-6. Update hero content to Snakeymon branding
+1. Update `OrderHistory` type in Motoko to include shippingAddress, status, trackingNumber
+2. Add `ShippingAddress` type
+3. Add `getAllOrders` (admin), `updateOrderStatus` (admin) functions
+4. Update `placeOrder` to accept shipping address
+5. Frontend: Add shipping address form in cart/checkout flow
+6. Frontend: `/orders` page showing user's order history
+7. Frontend: Admin Orders tab with full order list, status controls, print button
+8. Frontend: Update SuccessPage with order ID and tracking link
+9. Add routes for /orders

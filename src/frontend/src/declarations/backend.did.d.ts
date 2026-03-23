@@ -29,12 +29,33 @@ export interface Cart {
 export type ExternalBlob = Uint8Array;
 export interface OrderHistory {
   'id' : OrderId,
+  'status' : OrderStatus,
+  'trackingNumber' : [] | [string],
   'createdAt' : bigint,
+  'shippingAddress' : ShippingAddress,
   'buyer' : Principal,
   'cardIds' : Array<CardId>,
   'totalPrice' : bigint,
 }
+export interface OrderHistoryUpdate {
+  'id' : OrderId,
+  'status' : OrderStatus,
+  'trackingNumber' : [] | [string],
+}
 export type OrderId = string;
+export type OrderStatus = { 'shipped' : null } |
+  { 'printing' : null } |
+  { 'pending' : null } |
+  { 'delivered' : null };
+export interface ShippingAddress {
+  'zip' : string,
+  'street' : string,
+  'country' : string,
+  'city' : string,
+  'name' : string,
+  'email' : string,
+  'state' : string,
+}
 export interface ShoppingItem {
   'productName' : string,
   'currency' : string,
@@ -106,6 +127,7 @@ export interface _SERVICE {
   >,
   'deleteCard' : ActorMethod<[CardId], undefined>,
   'getAllCards' : ActorMethod<[], Array<Card>>,
+  'getAllOrders' : ActorMethod<[], Array<OrderHistory>>,
   'getCallerUserProfile' : ActorMethod<[], [] | [UserProfile]>,
   'getCallerUserRole' : ActorMethod<[], UserRole>,
   'getCard' : ActorMethod<[CardId], Card>,
@@ -115,12 +137,13 @@ export interface _SERVICE {
   'getUserProfile' : ActorMethod<[Principal], [] | [UserProfile]>,
   'isCallerAdmin' : ActorMethod<[], boolean>,
   'isStripeConfigured' : ActorMethod<[], boolean>,
-  'placeOrder' : ActorMethod<[], OrderId>,
+  'placeOrder' : ActorMethod<[ShippingAddress], OrderId>,
   'removeFromCart' : ActorMethod<[CardId], undefined>,
   'saveCallerUserProfile' : ActorMethod<[UserProfile], undefined>,
   'setStripeConfiguration' : ActorMethod<[StripeConfiguration], undefined>,
   'transform' : ActorMethod<[TransformationInput], TransformationOutput>,
   'updateCard' : ActorMethod<[Card], undefined>,
+  'updateOrderStatus' : ActorMethod<[OrderHistoryUpdate], undefined>,
 }
 export declare const idlService: IDL.ServiceClass;
 export declare const idlInitArgs: IDL.Type[];

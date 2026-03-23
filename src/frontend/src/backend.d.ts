@@ -14,9 +14,7 @@ export class ExternalBlob {
     static fromBytes(blob: Uint8Array<ArrayBuffer>): ExternalBlob;
     withUploadProgress(onProgress: (percentage: number) => void): ExternalBlob;
 }
-export interface UserProfile {
-    name: string;
-}
+export type OrderId = string;
 export interface Card {
     id: CardId;
     name: string;
@@ -32,6 +30,15 @@ export interface TransformationOutput {
     body: Uint8Array;
     headers: Array<http_header>;
 }
+export interface ShippingAddress {
+    zip: string;
+    street: string;
+    country: string;
+    city: string;
+    name: string;
+    email: string;
+    state: string;
+}
 export interface http_header {
     value: string;
     name: string;
@@ -41,9 +48,17 @@ export interface http_request_result {
     body: Uint8Array;
     headers: Array<http_header>;
 }
+export interface OrderHistoryUpdate {
+    id: OrderId;
+    status: OrderStatus;
+    trackingNumber?: string;
+}
 export interface OrderHistory {
     id: OrderId;
+    status: OrderStatus;
+    trackingNumber?: string;
     createdAt: bigint;
+    shippingAddress: ShippingAddress;
     buyer: Principal;
     cardIds: Array<CardId>;
     totalPrice: bigint;
@@ -81,7 +96,15 @@ export interface StripeConfiguration {
     secretKey: string;
 }
 export type CardId = string;
-export type OrderId = string;
+export interface UserProfile {
+    name: string;
+}
+export enum OrderStatus {
+    shipped = "shipped",
+    printing = "printing",
+    pending = "pending",
+    delivered = "delivered"
+}
 export enum UserRole {
     admin = "admin",
     user = "user",
@@ -94,6 +117,7 @@ export interface backendInterface {
     createCheckoutSession(items: Array<ShoppingItem>, successUrl: string, cancelUrl: string): Promise<string>;
     deleteCard(id: CardId): Promise<void>;
     getAllCards(): Promise<Array<Card>>;
+    getAllOrders(): Promise<Array<OrderHistory>>;
     getCallerUserProfile(): Promise<UserProfile | null>;
     getCallerUserRole(): Promise<UserRole>;
     getCard(id: CardId): Promise<Card>;
@@ -103,10 +127,11 @@ export interface backendInterface {
     getUserProfile(user: Principal): Promise<UserProfile | null>;
     isCallerAdmin(): Promise<boolean>;
     isStripeConfigured(): Promise<boolean>;
-    placeOrder(): Promise<OrderId>;
+    placeOrder(shippingAddress: ShippingAddress): Promise<OrderId>;
     removeFromCart(cardId: CardId): Promise<void>;
     saveCallerUserProfile(profile: UserProfile): Promise<void>;
     setStripeConfiguration(config: StripeConfiguration): Promise<void>;
     transform(input: TransformationInput): Promise<TransformationOutput>;
     updateCard(card: Card): Promise<void>;
+    updateOrderStatus(update: OrderHistoryUpdate): Promise<void>;
 }
